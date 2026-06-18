@@ -20,11 +20,11 @@ Files: `usb_win.c`, `usb_win.h`
 
 - Wrap libusb-1.0 for Windows (same API as Linux, different link flags)
 - Functions:
-  - `usb_open_device(uint16_t vid, uint16_t pid)` → `libusb_device_handle *`
+  - `usb_open_device(uint16_t vid, uint16_t pid, int *error_out)` → `usb_device_t *` (sets `*error_out` to `LIBUSB_ERROR_ACCESS` on permission failure)
   - `usb_list_devices()` — enumerate and print matching cameras
-  - `usb_close_device(handle)`
-  - `usb_bulk_transfer_out(handle, endpoint, data, length, timeout_ms)` → int
-  - `usb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout_ms)` → int
+  - `usb_close_device(usb_device_t *dev)`
+  - `usb_bulk_transfer_out(usb_device_t *dev, uint8_t endpoint, uint8_t *data, int length, unsigned int timeout_ms)` → int
+  - `usb_control_transfer(usb_device_t *dev, uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue, uint16_t wIndex, uint8_t *data, uint16_t wLength, unsigned int timeout_ms)` → int
 - Link flags: `-lusb-1.0 -lsetupapi -static-libgcc`
 - Compiler: `x86_64-w64-mingw32-gcc`
 
@@ -49,7 +49,7 @@ Files: `fwloader.c`, `fwloader.h`
   3. Send vendor control request 0xF1 (boot trigger) to EP0
 - States: INIT → FLASH → VERIFY (re-enumerate check optional)
 - Functions:
-  - `fwloader_run(handle, fw_buf, fw_size, verbose)` → int
+  - `fwloader_run(usb_device_t *dev, uint8_t *fw_buf, size_t fw_size, int verbose)` → int
 - Reference: https://github.com/ondrej-zary/samsung-tvcam-fwloader/blob/master/fwloader.c
 
 AIT control transfer parameters:

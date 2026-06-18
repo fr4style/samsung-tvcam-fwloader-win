@@ -17,32 +17,76 @@ static int is_samsung_camera(uint16_t vid, uint16_t pid)
     return 0;
 }
 
-usb_device_t *usb_open_device(uint16_t vid, uint16_t pid)
+usb_device_t *usb_open_device(uint16_t vid, uint16_t pid, int *error_out)
 {
     usb_device_t *dev = malloc(sizeof(usb_device_t));
     if (!dev) {
         fprintf(stderr, "error: out of memory\n");
+        if (error_out)
+            *error_out = LIBUSB_ERROR_NO_MEM;
         return NULL;
     }
 
     if (libusb_init(&dev->ctx) < 0) {
         fprintf(stderr, "error: libusb_init failed\n");
+        if (error_out)
+            *error_out = LIBUSB_ERROR_OTHER;
         free(dev);
         return NULL;
     }
 
-    dev->handle = libusb_open_device_with_vid_pid(dev->ctx, vid, pid);
-    if (!dev->handle) {
-        fprintf(stderr, "error: device %04x:%04x not found\n", vid, pid);
+    dev->handle = NULL;
+
+    libusb_device **list;
+    ssize_t count = libusb_get_device_list(dev->ctx, &list);
+    if (count < 0) {
+        fprintf(stderr, "error: libusb_get_device_list failed\n");
+        if (error_out)
+            *error_out = (int)count;
         libusb_exit(dev->ctx);
         free(dev);
         return NULL;
     }
 
+    int open_ret = LIBUSB_ERROR_NOT_FOUND;
+    for (ssize_t i = 0; i < count; i++) {
+        struct libusb_device_descriptor desc;
+        int ret = libusb_get_device_descriptor(list[i], &desc);
+        if (ret < 0)
+            continue;
+        if (desc.idVendor != vid || desc.idProduct != pid)
+            continue;
+
+        ret = libusb_open(list[i], &dev->handle);
+        if (ret == 0)
+            break;
+        if (ret == LIBUSB_ERROR_ACCESS || open_ret != LIBUSB_ERROR_ACCESS)
+            open_ret = ret;
+    }
+
+    libusb_free_device_list(list, 1);
+
+    if (!dev->handle) {
+        if (open_ret == LIBUSB_ERROR_ACCESS) {
+            fprintf(stderr, "error: access denied opening device %04x:%04x\n", vid, pid);
+        } else {
+            fprintf(stderr, "error: device %04x:%04x not found\n", vid, pid);
+        }
+        if (error_out)
+            *error_out = open_ret;
+        libusb_exit(dev->ctx);
+        free(dev);
+        return NULL;
+    }
+
+    if (error_out)
+        *error_out = 0;
+
     libusb_set_auto_detach_kernel_driver(dev->handle, 1);
 
-    if (libusb_claim_interface(dev->handle, 0) < 0) {
-        fprintf(stderr, "error: failed to claim interface 0\n");
+    int ret = libusb_claim_interface(dev->handle, 0);
+    if (ret < 0) {
+        fprintf(stderr, "error: failed to claim interface 0: %s\n", libusb_error_name(ret));
         libusb_close(dev->handle);
         libusb_exit(dev->ctx);
         free(dev);
@@ -72,8 +116,11 @@ void usb_list_devices(void)
     int found = 0;
     for (ssize_t i = 0; i < count; i++) {
         struct libusb_device_descriptor desc;
-        if (libusb_get_device_descriptor(list[i], &desc) < 0)
+        int ret = libusb_get_device_descriptor(list[i], &desc);
+        if (ret < 0) {
+            fprintf(stderr, "[warn] usb_list_devices: skipping device: %s\n", libusb_error_name(ret));
             continue;
+        }
         if (!is_samsung_camera(desc.idVendor, desc.idProduct))
             continue;
         printf("  %04x:%04x  bus %d port %d\n",
