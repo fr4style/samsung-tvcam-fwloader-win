@@ -60,13 +60,14 @@ static int build_default_firmware_path(char *out, size_t out_sz)
 int main(int argc, char **argv)
 {
     const char *firmware_path = NULL;
-    char default_firmware_path[MAX_PATH];
+    char default_firmware_path[MAX_PATH] = { 0 };
     uint8_t *fw_buf = NULL;
     size_t fw_size = 0;
     usb_device_t *dev = NULL;
     int usb_open_error = 0;
     int verbose = 0;
     int list_only = 0;
+    int using_default_firmware_path = 0;
 
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
@@ -121,10 +122,11 @@ int main(int argc, char **argv)
             return 1;
         }
         firmware_path = default_firmware_path;
+        using_default_firmware_path = 1;
     }
 
     if (fw_load(firmware_path, &fw_buf, &fw_size) != 0) {
-        if (strcmp(firmware_path, default_firmware_path) == 0)
+        if (using_default_firmware_path)
             fprintf(stderr, "FalconFW.bin not found. See INSTALL.md.\n");
         return 1;
     }
