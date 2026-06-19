@@ -68,11 +68,6 @@ int main(int argc, char **argv)
     int verbose = 0;
     int list_only = 0;
 
-    if (build_default_firmware_path(default_firmware_path, sizeof(default_firmware_path)) != 0) {
-        fprintf(stderr, "error: default firmware path is too long\n");
-        return 1;
-    }
-
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
 
@@ -120,11 +115,16 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!firmware_path)
+    if (!firmware_path) {
+        if (build_default_firmware_path(default_firmware_path, sizeof(default_firmware_path)) != 0) {
+            fprintf(stderr, "error: default firmware path is too long\n");
+            return 1;
+        }
         firmware_path = default_firmware_path;
+    }
 
     if (fw_load(firmware_path, &fw_buf, &fw_size) != 0) {
-        if (!firmware_path || strcmp(firmware_path, default_firmware_path) == 0)
+        if (strcmp(firmware_path, default_firmware_path) == 0)
             fprintf(stderr, "FalconFW.bin not found. See INSTALL.md.\n");
         return 1;
     }

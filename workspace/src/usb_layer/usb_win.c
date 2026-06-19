@@ -79,19 +79,21 @@ usb_device_t *usb_open_device(uint16_t vid, uint16_t pid, int *error_out)
         return NULL;
     }
 
-    if (error_out)
-        *error_out = 0;
-
     libusb_set_auto_detach_kernel_driver(dev->handle, 1);
 
     int ret = libusb_claim_interface(dev->handle, 0);
     if (ret < 0) {
         fprintf(stderr, "error: failed to claim interface 0: %s\n", libusb_error_name(ret));
+        if (error_out)
+            *error_out = ret;
         libusb_close(dev->handle);
         libusb_exit(dev->ctx);
         free(dev);
         return NULL;
     }
+
+    if (error_out)
+        *error_out = 0;
 
     return dev;
 }

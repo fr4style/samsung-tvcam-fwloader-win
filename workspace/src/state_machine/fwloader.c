@@ -6,7 +6,6 @@
 #define AIT_REQ_TYPE   0x40
 #define AIT_REQ_INIT   0xF0
 #define AIT_REQ_BOOT   0xF1
-#define AIT_TIMEOUT_MS 1000
 #define AIT_BULK_TIMEOUT_MS 5000
 
 int fwloader_run(usb_device_t *dev, uint8_t *fw_buf, size_t fw_size, int verbose)
@@ -16,8 +15,10 @@ int fwloader_run(usb_device_t *dev, uint8_t *fw_buf, size_t fw_size, int verbose
         return -1;
     }
 
-    if (fw_size == 0)
+    if (fw_size == 0) {
+        fprintf(stderr, "fwloader: firmware buffer is empty\n");
         return -1;
+    }
 
     if (verbose)
         printf("fwloader: INIT\n");

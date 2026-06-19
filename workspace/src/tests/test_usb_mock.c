@@ -7,20 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USB_WIN_H
-
-typedef struct usb_device_t {
-    void *ctx;
-    void *handle;
-} usb_device_t;
-
-usb_device_t *usb_open_device(uint16_t vid, uint16_t pid, int *error_out);
-void usb_close_device(usb_device_t *dev);
-int usb_bulk_transfer_out(usb_device_t *dev, uint8_t endpoint, uint8_t *data,
-                          int length, unsigned int timeout_ms);
-int usb_control_transfer(usb_device_t *dev, uint8_t bmRequestType,
-                         uint8_t bRequest, uint16_t wValue, uint16_t wIndex,
-                         uint8_t *data, uint16_t wLength, unsigned int timeout_ms);
+#define USB_WIN_NO_LIBUSB
+#include "../usb_layer/usb_win.h"
 
 #include "../state_machine/fwloader.c"
 
@@ -126,7 +114,7 @@ static void expect_control(size_t index, uint8_t request)
     CHECK(entry->c == 0);
     CHECK(entry->d == 0);
     CHECK(entry->length == 0);
-    CHECK(entry->timeout_ms == 1000);
+    CHECK(entry->timeout_ms == AIT_TIMEOUT_MS);
 }
 
 static void expect_bulk(size_t index, const uint8_t *expected, int length)

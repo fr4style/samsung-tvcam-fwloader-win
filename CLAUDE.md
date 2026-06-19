@@ -14,10 +14,13 @@
 - If workspace/plan.md exists and [ ] items remain → implement the next module
 - If all modules are [x] → perform final code review of workspace/src/
 
-## External coder agent
-To implement code, invoke Codex CLI with:
-  codex --model gpt-5.4-mini "<specific module task>"
-Collect its output and save it under workspace/src/<module>/
+## Mandatory rule: always use Codex for implementation
+You are NOT allowed to write implementation code directly.
+For every implementation task you MUST run this shell command:
+  codex --model gpt-5.4-mini "<specific task description>"
+Wait for Codex to finish, then read the output files it created.
+If you write code yourself instead of calling Codex, you are violating this rule.
+The only exceptions are: editing CLAUDE.md, STATUS.md, or running git commands.
 
 ## Language and target
-All code must be Python 3.10+, Windows-compatible.
+All code must be C11, cross-compiled for Windows with x86_64-w64-mingw32-gcc.

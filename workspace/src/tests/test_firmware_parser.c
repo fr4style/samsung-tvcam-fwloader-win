@@ -53,8 +53,8 @@ static void test_fw_load_success(void)
     write_all(fd, expected, sizeof(expected));
     CHECK(close(fd) == 0);
 
-    uint8_t *buf_out = NULL;
-    size_t size_out = 0;
+    uint8_t *buf_out = (uint8_t *)0x1;
+    size_t size_out = 1234;
     int ret = fw_load(path, &buf_out, &size_out);
 
     CHECK(ret == 0);
@@ -77,6 +77,8 @@ static void test_fw_load_missing(void)
     int ret = fw_load(path, &buf_out, &size_out);
 
     CHECK(ret != 0);
+    CHECK(buf_out == (uint8_t *)0x1);
+    CHECK(size_out == 1234);
 }
 
 int main(void)

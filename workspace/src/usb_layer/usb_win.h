@@ -2,7 +2,13 @@
 #define USB_WIN_H
 
 #include <stdint.h>
+
+#ifdef USB_WIN_NO_LIBUSB
+typedef struct libusb_context libusb_context;
+typedef struct libusb_device_handle libusb_device_handle;
+#else
 #include <libusb-1.0/libusb.h>
+#endif
 
 typedef struct {
     libusb_context       *ctx;
