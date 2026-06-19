@@ -2,7 +2,19 @@
 
 ## Windows install
 
-1. Install the WinUSB driver for `VID_04E8&PID_205C`.
+**Automated (recommended):**
+
+1. Copy `samsung-fwloader.exe`, `libusb-1.0.dll`, `drivers\samsung-tvcam.inf`, and `install.bat` into the same folder.
+2. Right-click `install.bat` → **Run as Administrator**.
+   - Installs the WinUSB driver via `pnputil`.
+   - Copies the exe and DLL to `C:\Program Files\SamsungFWLoader`.
+   - Adds that directory to the system PATH.
+3. Place `FalconFW.bin` in `C:\Program Files\SamsungFWLoader`.
+4. Connect the camera in firmware-update mode and run `samsung-fwloader.exe`.
+
+**Manual:**
+
+1. Install the WinUSB driver for `VID_04E8&PID_205C` (e.g., via Zadig).
 2. Copy `samsung-fwloader.exe`, `libusb-1.0.dll`, and `FalconFW.bin` into the same folder.
 3. Connect the camera in firmware-update mode.
 4. Run `samsung-fwloader.exe`.
