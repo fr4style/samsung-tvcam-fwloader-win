@@ -11,6 +11,9 @@ DriverVer=06/19/2026,1.0.0.0
 [Samsung.NTamd64]
 %DeviceName%=WinUSB_Install,USB\VID_04E8&PID_205C
 
+[WinUSB_Install.HW]
+AddReg=WinUSB_Install.HW.AddReg
+
 [WinUSB_Install]
 Include=winusb.inf
 Needs=WINUSB.NT
@@ -18,6 +21,9 @@ Needs=WINUSB.NT
 [WinUSB_Install.Services]
 Include=winusb.inf
 Needs=WINUSB.NT.Services
+
+[WinUSB_Install.HW.AddReg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{0a764d08-c77d-4f81-9e1c-5f7aaccead3a}"
 
 [Strings]
 ManufacturerName="Samsung"
